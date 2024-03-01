@@ -1,18 +1,24 @@
-export default class Tree {
-  nodes;
-  lookup;
-  root;
-  childrenOf = {};
+type NodeData = {
+  id: string;
+  parent?: string;
+}
 
-  constructor(arr) {
+export default class Tree<T extends NodeData> {
+  nodes: Node<T>[];
+  lookup: Record<string, Node<T>>;
+  root;
+  childrenOf: Record<string, Node<T>[]> = {};
+
+  constructor(arr: T[]) {
     this.nodes = arr.map((n) => new Node(n.id, n));
-    this.lookup = this.nodes.reduce((hash, node) => {
+    this.lookup = this.nodes.reduce((hash: Record<string, Node<T>>, node: Node<T>) => {
       hash[node.id] = node;
       return hash;
     }, {});
 
     this.nodes.forEach((n) => {
-      n.parent = this.lookup[n.data.boss];
+      if (!n.data.parent) return;
+      n.parent = this.lookup[n.data.parent];
       if (!n.parent) return;
       this.childrenOf[n.parent.id] = this.childrenOf[n.parent.id] ?? [];
       this.childrenOf[n.parent.id].push(n);
@@ -35,7 +41,7 @@ export default class Tree {
     if (cycles.length)
       throw new Error(
         `Cannot construct tree from collection with cycles: \n\n${cycles
-          .map((c) => c.toString())
+          .map((c) => c?.toString() ?? '')
           .join("\n")}`,
       );
 
@@ -47,53 +53,53 @@ export default class Tree {
   }
 }
 
-class Node {
-  id;
-  data;
-  parent = null;
-  children = [];
+class Node<T extends NodeData> {
+  id: string;
+  data: T;
+  parent?: Node<T>;
+  children:  Node<T>[] = [];
 
-  constructor(id, data) {
+  constructor(id:string, data: T) {
     this.id = id;
     this.data = data;
   }
 
   detectCycle() {
-    const marks = {};
+    const marks: Record<string, boolean> = {};
     const chain = [];
 
-    let cur = this;
+    let cur:Node<T> = this;
     while (cur.parent) {
       marks[cur.id] = true;
       chain.push(cur);
       cur = cur.parent;
-      if (marks[cur]) return chain;
+      if (marks[cur.id]) return chain;
     }
 
     return null;
   }
 
   *breadthFirst() {
-    let queue = [this];
+    let queue: Node<T>[] = [this];
     while (queue.length) {
       const node = queue.shift();
       yield node;
-      queue.push(...node.children);
+      if (node) queue.push(...node.children);
     }
   }
 
   *depthFirst() {
-    let queue = [this];
+    let queue: Node<T>[] = [this];
     while (queue.length) {
       const node = queue.pop();
       yield node;
-      queue.push(...node.children);
+      if (node) queue.push(...node.children);
     }
   }
 
-  find(idOrPredicate) {
+  find(idOrPredicate:(string | ((n?: Node<T>) => boolean))) {
     const predicate =
-      typeof idOrPredicate === "string" ? (n) => n.id : idOrPredicate;
+      typeof idOrPredicate === "string" ? (n?: Node<T>) => n?.id : idOrPredicate;
 
     const gen = this.breadthFirst();
     for (const n of gen) {
@@ -101,7 +107,7 @@ class Node {
     }
   }
 
-  print(fmt, indent = 0) {
+  print(fmt?: (n: Node<T>) => string, indent = 0) {
     const fmtr = fmt ?? ((n) => n.id);
     console.log(" ".repeat(indent * 2) + fmtr(this));
     this.children.forEach((c) => c.print(fmtr, indent + 1));
