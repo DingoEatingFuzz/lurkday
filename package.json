@@ -9,6 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "csv": "^6.3.8"
+    "csv": "^6.3.8",
+    "node-xlsx": "^0.23.0"
   }
 }
