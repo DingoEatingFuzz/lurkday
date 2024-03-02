@@ -1,6 +1,16 @@
+import { EOL } from 'os';
+
 type NodeData = {
   id: string;
   parent?: string;
+}
+
+function limitList(list: unknown[], fmt: (v: any) => string) {
+  let str = EOL + list.slice(0, 20).map(v => `  ${fmt(v)}`).join(EOL);
+  if (list.length > 20) {
+    str += `${EOL}  ...and ${list.length - 20} more`
+  }
+  return str;
 }
 
 export default class Tree<T extends NodeData> {
@@ -28,9 +38,7 @@ export default class Tree<T extends NodeData> {
 
     if (roots.length > 1)
       throw new Error(
-        `Cannot construct tree from collection with multiple roots: ${roots.map(
-          (r) => r.id,
-        )}`,
+        `Cannot construct tree from collection with multiple roots: ${limitList(roots, (r: Node<T>) => `${r.id}`)}`
       );
     if (roots.length === 0)
       throw new Error(`Cannot construct tree from collection with no root`);
@@ -40,9 +48,7 @@ export default class Tree<T extends NodeData> {
       .filter((c) => c != null);
     if (cycles.length)
       throw new Error(
-        `Cannot construct tree from collection with cycles: \n\n${cycles
-          .map((c) => c?.toString() ?? '')
-          .join("\n")}`,
+        `Cannot construct tree from collection with cycles: \n\n${limitList(cycles, (c: Node<T>[]) => c?.toString() ?? '')}`,
       );
 
     this.root = roots[0];
@@ -66,7 +72,7 @@ class Node<T extends NodeData> {
 
   detectCycle() {
     const marks: Record<string, boolean> = {};
-    const chain = [];
+    const chain: Node<T>[] = [];
 
     let cur:Node<T> = this;
     while (cur.parent) {
