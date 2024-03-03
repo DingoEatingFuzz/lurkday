@@ -6,6 +6,8 @@ import chalk from 'chalk';
 import { nfmt } from './utils';
 import reader, { Person } from './reader';
 import type Tree from './tree';
+import { parse } from './parse';
+
 
 const args = parseArgs({
   allowPositionals: true,
@@ -30,13 +32,10 @@ async function main(orgtree: Tree<Person>) {
     const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : '> ';
     firstCmd = false;
 
-    const cmd = await rl.question(prompt);
-    console.log(`Got command ${chalk.bold.yellow(cmd)} now to parse...`);
+    const cmdstr = await rl.question(prompt);
+    console.log(`Got command ${chalk.bold.yellow(cmdstr)} now to parse...`);
+
+    const cmd = parse(cmdstr);
+    console.log(cmd);
   }
 }
-
-// $ lurkday file
-// > find "name of person"
-// > tree "$"
-// > chain "$"
-// > peers
