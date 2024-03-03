@@ -4,7 +4,7 @@ import xlsx from 'node-xlsx';
 import { err, checksum } from './utils';
 import Tree from './tree';
 
-interface Person {
+export interface Person {
   id: string;
   name: string;
   parent: string;

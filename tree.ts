@@ -57,6 +57,10 @@ export default class Tree<T extends NodeData> {
       n.children = this.childrenOf[n.id] ?? [];
     });
   }
+
+  size() {
+    return this.root.size();
+  }
 }
 
 class Node<T extends NodeData> {
@@ -111,6 +115,10 @@ class Node<T extends NodeData> {
     for (const n of gen) {
       if (predicate(n)) return n;
     }
+  }
+
+  size() {
+    return Array.from(this.breadthFirst()).length;
   }
 
   print(fmt?: (n: Node<T>) => string, indent = 0) {

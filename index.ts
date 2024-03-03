@@ -1,6 +1,11 @@
-// This is a bun import, dunno if it make things be bad in node
+import { EOL } from 'os';
+import * as readline from 'readline/promises';
 import { parseArgs } from 'util';
-import reader from './reader';
+import { stdin, stdout } from 'process';
+import chalk from 'chalk';
+import { nfmt } from './utils';
+import reader, { Person } from './reader';
+import type Tree from './tree';
 
 const args = parseArgs({
   allowPositionals: true,
@@ -15,4 +20,23 @@ const FILE = args.positionals[0];
 let orgtree = reader(FILE, !NO_CACHE);
 if (!orgtree) process.exit();
 
-console.log(orgtree.root.data.name, orgtree.root.data.title);
+await main(orgtree);
+
+async function main(orgtree: Tree<Person>) {
+  let firstCmd = true;
+  const rl = readline.createInterface({ input: stdin, output: stdout });
+
+  while (true) {
+    const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : '> ';
+    firstCmd = false;
+
+    const cmd = await rl.question(prompt);
+    console.log(`Got command ${chalk.bold.yellow(cmd)} now to parse...`);
+  }
+}
+
+// $ lurkday file
+// > find "name of person"
+// > tree "$"
+// > chain "$"
+// > peers
