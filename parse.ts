@@ -1,6 +1,5 @@
 export enum TreeFunctions {
   help = 'help',
-  find = 'find',
   tree = 'tree',
   directs = 'directs',
   chain = 'chain',
