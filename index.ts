@@ -42,7 +42,8 @@ async function main(orgtree: Tree<Person>) {
     const cmd = parse(cmdstr);
 
     if ((cmd as ParseError).error) {
-      // Handle error
+      const e = cmd as ParseError;
+      console.log(chalk.red(e.error + EOL + EOL + e.context));
     } else {
       await commander.exec(cmd as Command);
     }
