@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { EOL } from 'os';
 import * as readline from 'readline/promises';
 import { parseArgs } from 'util';
