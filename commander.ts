@@ -97,7 +97,7 @@ export default class Commander {
       const delimiter = ext === Filetype.csv ? ',' : '\t';
       str = csvStringify([
         ['id', 'parent', 'name', 'title', 'location'],
-        ...nodes.map(n => [n.id, n.parent, n.data.name, n.data.title, n.data.location])
+        ...nodes.map(n => [n.id, n.parent?.id, n.data.name, n.data.title, n.data.location])
       ], { delimiter });
     }
 
