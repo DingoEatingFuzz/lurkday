@@ -3,7 +3,7 @@ import * as readline from 'readline/promises';
 import { parseArgs } from 'util';
 import { stdin, stdout } from 'process';
 import chalk from 'chalk';
-import { nfmt } from './utils';
+import { nfmt, prettyPrintPerson } from './utils';
 import reader, { Person } from './reader';
 import Tree, { Node } from './tree';
 import { parse, ParseError, Command, TreeFunctions } from './parse';
@@ -81,21 +81,7 @@ class Commander {
         return;
       }
 
-      node.print((n) => {
-        const allReports = [...n.breadthFirst()].length - 1;
-        const isMgrMgr = allReports > n.children.length;
-        const isManager = n.children.length > 0 && !isMgrMgr;
-        const title = chalk.blue(n.data.title);
-        const loc = chalk.green(n.data.location);
-        const parts = [
-          n.data.name,
-          isManager ? chalk.yellow(`(${allReports} directs)`) : '',
-          isMgrMgr ? chalk.yellow(`(${n.children.length} directs, ${allReports} total)`) : '',
-          title,
-          loc
-        ]
-        return parts.filter(p => p).join(' ');
-      });
+      node.print(prettyPrintPerson);
     }
 
     // Handle all other cases
