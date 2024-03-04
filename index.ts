@@ -4,6 +4,7 @@ import { parseArgs } from 'util';
 import { writeFileSync } from 'fs';
 import { stdin, stdout } from 'process';
 import chalk from 'chalk';
+import select from '@inquirer/select';
 import { stringify as csvStringify } from 'csv-stringify/sync';
 import { nfmt, prettyPrintPerson } from './utils';
 import reader, { Person } from './reader';
@@ -116,10 +117,12 @@ class Commander {
 
   async disambiguate(nodes: Node<Person>[]): Promise<Node<Person>> {
     if (nodes.length === 1) return nodes[0];
-    // Bring in selector
-    console.log(chalk.yellow('Found multiple'));
-    nodes.forEach(n => console.log(prettyPrintPerson(n)));
-    return nodes[0];
+
+    return await select({
+      message: chalk.yellow('Multiple potential matches. Please select one:'),
+      choices: nodes.map(n => ({ name: prettyPrintPerson(n), value: n })),
+      loop: false,
+    });
   }
 
   async save(nodes: Node<Person>[], name: string, ext: Filetype) {
