@@ -63,7 +63,7 @@ export default class Tree<T extends NodeData> {
   }
 }
 
-class Node<T extends NodeData> {
+export class Node<T extends NodeData> {
   id: string;
   data: T;
   parent?: Node<T>;
@@ -107,14 +107,29 @@ class Node<T extends NodeData> {
     }
   }
 
-  find(idOrPredicate:(string | ((n?: Node<T>) => boolean))) {
+  find(idOrPredicate:(string | ((n?: Node<T>) => boolean))): Node<T> | null {
     const predicate =
       typeof idOrPredicate === "string" ? (n?: Node<T>) => n?.id : idOrPredicate;
 
     const gen = this.breadthFirst();
     for (const n of gen) {
-      if (predicate(n)) return n;
+      if (predicate(n) && n) return n;
     }
+
+    return null;
+  }
+
+  findAll(idOrPredicate:(string | ((n?: Node<T>) => boolean))): Node<T>[] {
+    const nodes: Node<T>[] = [];
+    const predicate =
+      typeof idOrPredicate === "string" ? (n?: Node<T>) => n?.id : idOrPredicate;
+
+    const gen = this.breadthFirst();
+    for (const n of gen) {
+      if (predicate(n) && n) nodes.push(n);
+    }
+
+    return nodes;
   }
 
   size() {
