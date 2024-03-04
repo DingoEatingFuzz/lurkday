@@ -6,7 +6,7 @@ import { stringify as csvStringify } from 'csv-stringify/sync';
 import { prettyPrintPerson } from './utils';
 import { Person } from './reader';
 import Tree, { Node } from './tree';
-import { shouldExport, Command, TreeFunctions, Filetype } from './parse';
+import { help, shouldExport, Command, TreeFunctions, Filetype } from './parse';
 
 export default class Commander {
   data;
@@ -18,7 +18,7 @@ export default class Commander {
   async exec(cmd: Command) {
     // If help, print and return
     if (cmd.fn === TreeFunctions.help) {
-      console.log('Lurkday, yep');
+      console.log(help().print());
       return;
     }
 

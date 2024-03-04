@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+import { EOL } from 'os';
+
 export enum TreeFunctions {
   help = 'help',
   tree = 'tree',
@@ -32,6 +35,32 @@ export interface ExportCommand {
   exports: boolean;
   filename: string;
   filetype: Filetype;
+}
+
+export function help() {
+  const functions = {
+    [TreeFunctions.help]:    [ 'help', 'Print this message' ],
+    [TreeFunctions.tree]:    [ 'tree {name}', 'Get the full reporting tree from {name} downward' ],
+    [TreeFunctions.directs]: [ 'directs {name}', 'Get the people who report direcly to {name}' ],
+    [TreeFunctions.chain]:   [ 'chain {name}', 'Get the full management chain for {name}' ],
+    [TreeFunctions.peers]:   [ 'peers {name}', "Get everyone who also reports to {name}'s boss" ],
+  }
+
+  const exporting = `All commands can be exported via ${chalk.yellow('[command] > filename.ext')}`;
+
+  return {
+    functions,
+    exporting,
+    print() {
+      const sb = [];
+      Object.entries(this.functions).forEach(([key, val]) => {
+        sb.push(`${key}: ${chalk.yellow(val[0])}${EOL}  ${val[1]}`);
+      });
+      sb.push(this.exporting);
+      sb.push('Available export formats:' + EOL + chalk.yellow(Object.values(Filetype).map(t => `  .${t}`).join(EOL)));
+      return sb.join(EOL + EOL);
+    }
+  }
 }
 
 export function shouldExport(cmd: Command): cmd is ExportCommand {
