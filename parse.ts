@@ -6,6 +6,13 @@ export enum TreeFunctions {
   peers = 'peers',
 };
 
+export enum Filetype {
+  csv = 'csv',
+  tsv = 'tsv',
+  json = 'json',
+  ndjson = 'ndjson',
+}
+
 export interface ParseError {
   error: string;
   context: string;
@@ -16,8 +23,20 @@ export interface Command {
   name?: string;
   exports: boolean;
   filename?: string;
-  filetype?: string;
+  filetype?: Filetype;
 };
+
+export interface ExportCommand {
+  fn: TreeFunctions;
+  name?: string;
+  exports: boolean;
+  filename: string;
+  filetype: Filetype;
+}
+
+export function shouldExport(cmd: Command): cmd is ExportCommand {
+  return cmd.exports;
+}
 
 export function parse(str: string): Command | ParseError {
   const tokens = str.split(' ');
@@ -48,8 +67,8 @@ export function parse(str: string): Command | ParseError {
   }
 
   let exports = false;
+  let filetype: Filetype | undefined = undefined;
   let filename;
-  let filetype;
   let name;
 
   const [peekName, peekExport] = tokens.slice().reverse().slice(0, 2);
@@ -65,12 +84,12 @@ export function parse(str: string): Command | ParseError {
     }
 
     filename = matches[0];
-    filetype = matches[2];
+    filetype = Filetype[matches[2] as keyof typeof Filetype];
 
-    if (!['csv', 'tsv', 'json', 'ndjson'].includes(filetype)) {
+    if (!filetype) {
       return {
         error: 'Invalid export filetype',
-        context: `Extension must be one of csv, tsv, json, or ndjson; received "${filetype}"`
+        context: `Extension received was "${filetype}", available formats are ${Object.keys(Filetype).join(', ')}`
       }
     }
 

@@ -1,13 +1,14 @@
 import { EOL } from 'os';
 import * as readline from 'readline/promises';
 import { parseArgs } from 'util';
+import { writeFileSync } from 'fs';
 import { stdin, stdout } from 'process';
 import chalk from 'chalk';
+import { stringify as csvStringify } from 'csv-stringify/sync';
 import { nfmt, prettyPrintPerson } from './utils';
 import reader, { Person } from './reader';
 import Tree, { Node } from './tree';
-import { parse, ParseError, Command, TreeFunctions } from './parse';
-
+import { parse, shouldExport, ParseError, Command, TreeFunctions, Filetype } from './parse';
 
 const args = parseArgs({
   allowPositionals: true,
@@ -61,7 +62,7 @@ class Commander {
     // This traverses the whole tree, there should be an index of names and also some fuzzy search.
     const nodes = this.data.root.findAll((n) => n?.data.name === cmd.name);
     if (nodes.length === 0) {
-      // Handle not found case
+      console.log(chalk.red(`No match for name ${cmd.name}`));
       return;
     }
 
@@ -69,7 +70,7 @@ class Commander {
 
     // Handle tree case
     if (cmd.fn === TreeFunctions.tree) {
-      if (cmd.exports) {
+      if (shouldExport(cmd)) {
         const flatlist = Array.from(node.breadthFirst()) as Node<Person>[];
         try {
           await this.save(flatlist, cmd.filename, cmd.filetype);
@@ -99,7 +100,7 @@ class Commander {
       return;
     }
 
-    if (cmd.exports) {
+    if (shouldExport(cmd)) {
       try {
         await this.save(selection, cmd.filename, cmd.filetype);
         console.log(`Saved file ${cmd.filename}`);
@@ -111,9 +112,6 @@ class Commander {
         console.log(`${n === node ? '*' : ' '}  ${prettyPrintPerson(n)}`);
       });
     }
-
-    // If/when name is unique, get result from strategy function
-    // Print or export
   }
 
   async disambiguate(nodes: Node<Person>[]): Promise<Node<Person>> {
@@ -122,8 +120,21 @@ class Commander {
     return nodes[0];
   }
 
-  async save(nodes: Node<Person>[], name?: string, ext?: string) {
-    // First create a string/buffer of the correct format
-    // Then write to disk
+  async save(nodes: Node<Person>[], name: string, ext: Filetype) {
+    let str;
+
+    if (ext === Filetype.json) {
+      str = JSON.stringify(nodes.map(n => n.serialize()));
+    } else if (ext === Filetype.ndjson) {
+      str = nodes.map(n => JSON.stringify(n.serialize())).join(EOL);
+    } else if (ext === Filetype.csv || ext === Filetype.tsv) {
+      const delimiter = ext === Filetype.csv ? ',' : '\t';
+      str = csvStringify([
+        ['id', 'parent', 'name', 'title', 'location'],
+        ...nodes.map(n => [n.id, n.parent, n.data.name, n.data.title, n.data.location])
+      ], { delimiter });
+    }
+
+    writeFileSync(name, str ?? '');
   }
 }

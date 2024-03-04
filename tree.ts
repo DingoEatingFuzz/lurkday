@@ -150,5 +150,9 @@ export class Node<T extends NodeData> {
     console.log(" ".repeat(indent * 2) + fmtr(this));
     this.children.forEach((c) => c.print(fmtr, indent + 1));
   }
+
+  serialize(): T {
+    return this.data;
+  }
 }
 
