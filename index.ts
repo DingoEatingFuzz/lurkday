@@ -117,6 +117,8 @@ class Commander {
   async disambiguate(nodes: Node<Person>[]): Promise<Node<Person>> {
     if (nodes.length === 1) return nodes[0];
     // Bring in selector
+    console.log(chalk.yellow('Found multiple'));
+    nodes.forEach(n => console.log(prettyPrintPerson(n)));
     return nodes[0];
   }
 

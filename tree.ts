@@ -1,4 +1,5 @@
 import { EOL } from 'os';
+import Fuse from 'fuse.js';
 
 type NodeData = {
   id: string;
@@ -20,6 +21,7 @@ export default class Tree<T extends NodeData> {
   childrenOf: Record<string, Node<T>[]> = {};
   index: Record<string, Node<T>[]> = {};
   searchProp: keyof T;
+  private fuse;
 
   constructor(arr: T[], searchProp: keyof T) {
     this.searchProp = searchProp;
@@ -68,6 +70,11 @@ export default class Tree<T extends NodeData> {
     this.nodes.forEach((n) => {
       n.children = this.childrenOf[n.id] ?? [];
     });
+
+    this.fuse = new Fuse(this.nodes, {
+      keys: [`data.${String(this.searchProp)}`],
+      threshold: 0.4
+    });
   }
 
   size() {
@@ -76,8 +83,12 @@ export default class Tree<T extends NodeData> {
 
   search(term: string = ''): Node<T>[] {
     // First look for exact matches
+    const exactMatches = this.index[term];
+    if (exactMatches?.length) return exactMatches;
+
     // Then fuzzy-find
-    return this.root.findAll((n) => n?.data[this.searchProp] === term);
+    const res = this.fuse.search(term);
+    return res.slice(0, 10).map(r => r.item);
   }
 }
 
