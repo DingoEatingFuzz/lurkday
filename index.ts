@@ -35,6 +35,9 @@ async function main(orgtree: Tree<Person>) {
     const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : `${EOL}> `;
     firstCmd = false;
 
+    // This is an artifact of inquirer, which pauses stdin and doesn't clean up
+    stdin.resume();
+
     const cmdstr = await rl.question(prompt);
     const cmd = parse(cmdstr);
 
