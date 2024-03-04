@@ -4,6 +4,33 @@ Did you know you can "print" an org chart from Workday as an excel sheet?
 
 This CLI utility takes that excel sheet and lets you quickly answer basic questions you may have about your coworkers.
 
+## Installation
+
+Use a node package manager:
+
+```shellsession
+$ bunx lurkday path/to/file.xlsx
+```
+
+or
+
+```shellsession
+$ npx lurkday path/to/file.xlsx
+```
+
+or
+
+```shellsession
+$ npm i -g lurkday
+$ lurkday path/to/file.xlsx
+```
+
+Don't have or want a node environment? You can do something like this to use Docker:
+
+```shellsession
+$ docker run -it --rm -v ./:/fs node:20 npx lurkday /fs/file.xlsx
+```
+
 ## How to lurk
 
 First, get an export of the org chart:
