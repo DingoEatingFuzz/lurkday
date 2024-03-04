@@ -82,10 +82,35 @@ class Commander {
       }
 
       node.print(prettyPrintPerson);
+      return;
     }
 
     // Handle all other cases
+    let selection: Node<Person>[];
 
+    if (cmd.fn === TreeFunctions.directs) {
+      selection = node.children;
+    } else if (cmd.fn === TreeFunctions.chain) {
+      selection = Array.from(node.parents()).reverse();
+    } else if (cmd.fn === TreeFunctions.peers) {
+      selection = node.parent?.children ?? [node];
+    } else {
+      console.log(chalk.red('No matches? Somehow???'));
+      return;
+    }
+
+    if (cmd.exports) {
+      try {
+        await this.save(selection, cmd.filename, cmd.filetype);
+        console.log(`Saved file ${cmd.filename}`);
+      } catch (err) {
+        console.log(chalk.red(`Could not save file: ${err}`));
+      }
+    } else {
+      selection.forEach(n => {
+        console.log(`${n === node ? '*' : ' '}  ${prettyPrintPerson(n)}`);
+      });
+    }
 
     // If/when name is unique, get result from strategy function
     // Print or export
