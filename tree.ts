@@ -107,6 +107,15 @@ export class Node<T extends NodeData> {
     }
   }
 
+  *parents() {
+    let cur: Node<T> | undefined = this;
+
+    while (cur) {
+      yield cur;
+      cur = cur.parent;
+    }
+  }
+
   find(idOrPredicate:(string | ((n?: Node<T>) => boolean))): Node<T> | null {
     const predicate =
       typeof idOrPredicate === "string" ? (n?: Node<T>) => n?.id : idOrPredicate;
