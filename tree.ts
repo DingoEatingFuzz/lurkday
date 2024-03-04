@@ -18,13 +18,25 @@ export default class Tree<T extends NodeData> {
   lookup: Record<string, Node<T>>;
   root;
   childrenOf: Record<string, Node<T>[]> = {};
+  index: Record<string, Node<T>[]> = {};
+  searchProp: keyof T;
 
-  constructor(arr: T[]) {
+  constructor(arr: T[], searchProp: keyof T) {
+    this.searchProp = searchProp;
     this.nodes = arr.map((n) => new Node(n.id, n));
     this.lookup = this.nodes.reduce((hash: Record<string, Node<T>>, node: Node<T>) => {
       hash[node.id] = node;
       return hash;
     }, {});
+
+    this.index = this.nodes.reduce((hash: Record<string, Node<T>[]>, node: Node<T>) => {
+      const key = node.data[this.searchProp]?.toString();
+      if (key) {
+        hash[key] = hash[key] ?? [];
+        hash[key].push(node);
+      }
+      return hash;
+    }, {})
 
     this.nodes.forEach((n) => {
       if (!n.data.parent) return;
@@ -60,6 +72,12 @@ export default class Tree<T extends NodeData> {
 
   size() {
     return this.root.size();
+  }
+
+  search(term: string = ''): Node<T>[] {
+    // First look for exact matches
+    // Then fuzzy-find
+    return this.root.findAll((n) => n?.data[this.searchProp] === term);
   }
 }
 

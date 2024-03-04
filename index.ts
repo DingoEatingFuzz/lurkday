@@ -60,7 +60,7 @@ class Commander {
     }
 
     // This traverses the whole tree, there should be an index of names and also some fuzzy search.
-    const nodes = this.data.root.findAll((n) => n?.data.name === cmd.name);
+    const nodes = this.data.search(cmd.name);
     if (nodes.length === 0) {
       console.log(chalk.red(`No match for name ${cmd.name}`));
       return;

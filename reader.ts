@@ -40,7 +40,7 @@ export default function reader(file: string, useCache: boolean = true): Tree<Per
 
 function makeTree(records: Person[]): Tree<Person> | undefined {
   try {
-    return new Tree<Person>(records);
+    return new Tree<Person>(records, 'name');
   } catch (e) {
     err((e as Error).message);
   }
