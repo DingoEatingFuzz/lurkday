@@ -64,3 +64,49 @@ In case you want to do an even deeper lurk, all commands (other than `help`) wil
 ```shellsession
 > tree That One VP > vp-tree.ndjson
 ```
+
+## Command mode
+
+When running Lurkday, the default behavior is to open a REPL. This is nice for poking around at data, but it doesn't lend itself to automation.
+
+To make automation easier, Lurkday can be run in command mode using the following format:
+
+```shellsession
+$ lurkday file.xlsx -c "tree That One VP"
+```
+
+This will print the reporting tree to `stdout` and terminate the process.
+
+If you want to print in a supported export format, provide the `--format` flag like so:
+
+```shellsession
+$ lurkday file.xlsx --format ndjson -c "tree That One VP"
+```
+
+> [!WARNING]
+> Since command mode is non-interactive, there is no opportunity to disambiguate a name. If the name is not an exact match, the program will error. To make sure you have an exact match, use the `find` command to get a person's Strong Enough Identifier™.
+
+### Strong Enough Identifiers
+
+Workday's xlsx exports do not include strong identifiers. Person and Parent IDs are not guaranteed to be consistent across exports. To combat this, Lurkday can look up people using a combination of name and location or a combination of name and title. Since titles and locations are subject to change over time, there is still no guarantee that this will match people across exports. Thus, the identifier isn't strong, just strong enough (usually).
+
+```shellsession
+$ lurkday file.xslx
+> Lurking 2,000 people
+> find Jane Doe
+? Multiple potential matches. Please select one:
+❯ Jane Doe (4 directs, 10 total) Sr. Director, Support Operations SF Bay Area
+  Jane Doe Sr. Support Engineer Australia
+  Jane Dow (5 directs, 143 total) VP, Engineering California
+Jane Doe Sr. Support Engineer Australia
+
+Strong Enough Identifiers:
+
+  l/Jane Doe::Australia/
+  t/Jane Doe::Sr. Support Engineer/
+
+$ lurkday file.xlsx -c "chain l/Jane Doe::Australia/"
+  Alan Locke Chief Executive Officer SF Bay Area
+  Bret Loser VP Engineering, Support Seattle, Washington
+* Jane Doe Sr. Support Engineer Australia
+```
