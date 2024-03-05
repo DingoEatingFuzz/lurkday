@@ -22,7 +22,11 @@ export default class Commander {
       return;
     }
 
-    const nodes = this.data.search(cmd.name);
+    if (!cmd.name) return;
+
+    const seiLookup = cmd.name.startsWith('l/') || cmd.name.startsWith('t/');
+
+    const nodes = seiLookup ? this.lookup(cmd.name) : this.data.search(cmd.name);
     if (nodes.length === 0) {
       console.log(chalk.red(`No match for name ${cmd.name}`));
       return;
@@ -74,6 +78,29 @@ export default class Commander {
         console.log(`${n === node ? '*' : ' '}  ${prettyPrintPerson(n)}`);
       });
     }
+  }
+
+  lookup(sei: string) {
+    const matches = sei.match(/^(\w)\/(.+?)::(.+?)\/$/);
+    if (!matches) return [];
+
+    const [, mode, name, dynamic] = matches;
+
+    const exactMatches = this.data.search(name);
+    const filtered = exactMatches.filter(n => {
+      if (mode === 'l') {
+        return n.data.location === dynamic;
+      } else if (mode === 't') {
+        return n.data.title === dynamic;
+      }
+      return false;
+    });
+
+    if (filtered.length > 1) {
+      console.log(chalk.red(`Strong Enough Identifier "${sei}" wasn't strong enough! Matched ${filtered.length} people`));
+    }
+
+    return filtered;
   }
 
   async disambiguate(nodes: Node<Person>[]): Promise<Node<Person>> {
