@@ -15,7 +15,7 @@ export default class Commander {
     this.data = data;
   }
 
-  async exec(cmd: Command) {
+  async exec(cmd: Command, nonInteractive: boolean = false) {
     // If help, print and return
     if (cmd.fn === TreeFunctions.help) {
       console.log(help().print());
@@ -32,7 +32,12 @@ export default class Commander {
       return;
     }
 
-    const node = await this.disambiguate(nodes);
+    if (nonInteractive && nodes.length > 1) {
+      console.log(chalk.red(`Must provide an exact match when using command mode. Provided: "${cmd.name}"`));
+      return;
+    }
+
+    const node = nonInteractive ? nodes[0] : await this.disambiguate(nodes);
 
     // Handle tree case
     if (cmd.fn === TreeFunctions.tree) {

@@ -15,11 +15,13 @@ const args = parseArgs({
   allowPositionals: true,
   options: {
     'no-cache': { type: 'boolean' },
+    'c': { type: 'string' },
   }
 });
 
 const NO_CACHE = args.values['no-cache'];
 const FILE = args.positionals[0];
+const COMMAND = args.values['c'];
 
 let orgtree = reader(FILE, !NO_CACHE);
 if (!orgtree) process.exit();
@@ -31,21 +33,33 @@ async function main(orgtree: Tree<Person>) {
   const rl = readline.createInterface({ input: stdin, output: stdout });
   const commander = new Commander(orgtree);
 
-  while (true) {
-    const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : `${EOL}> `;
-    firstCmd = false;
-
-    // This is an artifact of inquirer, which pauses stdin and doesn't clean up
-    stdin.resume();
-
-    const cmdstr = await rl.question(prompt);
-    const cmd = parse(cmdstr);
-
+  if (COMMAND) {
+    const cmd = parse(COMMAND);
     if ((cmd as ParseError).error) {
       const e = cmd as ParseError;
       console.log(chalk.red(e.error + EOL + EOL + e.context));
     } else {
-      await commander.exec(cmd as Command);
+      await commander.exec(cmd as Command, true);
+    }
+  } else {
+    while (true) {
+      const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : `${EOL}> `;
+      firstCmd = false;
+
+      // This is an artifact of inquirer, which pauses stdin and doesn't clean up
+      stdin.resume();
+
+      const cmdstr = await rl.question(prompt);
+      const cmd = parse(cmdstr);
+
+      if ((cmd as ParseError).error) {
+        const e = cmd as ParseError;
+        console.log(chalk.red(e.error + EOL + EOL + e.context));
+      } else {
+        await commander.exec(cmd as Command);
+      }
     }
   }
+
+  process.exit(0);
 }
