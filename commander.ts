@@ -44,8 +44,9 @@ export default class Commander {
       if (shouldExport(cmd)) {
         const flatlist = Array.from(node.breadthFirst()) as Node<Person>[];
         try {
-          await this.save(flatlist, cmd.filename, cmd.filetype);
-          console.log(`Saved file ${cmd.filename}`);
+          const str = await this.save(flatlist, cmd.filename, cmd.filetype);
+          if (cmd.filename) console.log(`Saved file ${cmd.filename}`);
+          if (nonInteractive) console.log(str);
         } catch (err) {
           console.log(chalk.red(`Could not save file: ${err}`));
         }
@@ -73,8 +74,9 @@ export default class Commander {
 
     if (shouldExport(cmd)) {
       try {
-        await this.save(selection, cmd.filename, cmd.filetype);
-        console.log(`Saved file ${cmd.filename}`);
+        const str = await this.save(selection, cmd.filename, cmd.filetype);
+        if (cmd.filename) console.log(`Saved file ${cmd.filename}`);
+        if (nonInteractive) console.log(str);
       } catch (err) {
         console.log(chalk.red(`Could not save file: ${err}`));
       }
@@ -118,7 +120,7 @@ export default class Commander {
     });
   }
 
-  async save(nodes: Node<Person>[], name: string, ext: Filetype) {
+  async save(nodes: Node<Person>[], name: string | undefined, ext: Filetype): Promise<string> {
     let str;
 
     if (ext === Filetype.json) {
@@ -133,6 +135,10 @@ export default class Commander {
       ], { delimiter });
     }
 
-    writeFileSync(name, str ?? '');
+    if (name) {
+      writeFileSync(name, str ?? '');
+    }
+
+    return str ?? '';
   }
 }

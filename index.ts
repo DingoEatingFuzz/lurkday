@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { nfmt } from './utils';
 import reader, { Person } from './reader';
 import Tree from './tree';
-import { parse, isError, ParseError } from './parse';
+import { parse, isError, ParseError, Filetype } from './parse';
 import Commander from './commander';
 
 const args = parseArgs({
@@ -16,12 +16,14 @@ const args = parseArgs({
   options: {
     'no-cache': { type: 'boolean' },
     'c': { type: 'string' },
+    'format': { type: 'string' },
   }
 });
 
 const NO_CACHE = args.values['no-cache'];
 const FILE = args.positionals[0];
 const COMMAND = args.values['c'];
+const FORMAT = args.values['format'] as keyof typeof Filetype;
 
 let orgtree = reader(FILE, !NO_CACHE);
 if (!orgtree) process.exit();
@@ -40,7 +42,13 @@ async function main(orgtree: Tree<Person>) {
   if (COMMAND) {
     const cmd = parse(COMMAND);
     if (isError(cmd)) printParseError(cmd);
-    else await commander.exec(cmd, true);
+    else {
+      if (FORMAT) {
+        cmd.exports = true;
+        cmd.filetype = Filetype[FORMAT];
+      }
+      await commander.exec(cmd, true);
+    }
   } else {
     while (true) {
       const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : `${EOL}> `;
