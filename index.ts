@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { nfmt } from './utils';
 import reader, { Person } from './reader';
 import Tree from './tree';
-import { parse, ParseError, Command } from './parse';
+import { parse, isError, ParseError } from './parse';
 import Commander from './commander';
 
 const args = parseArgs({
@@ -28,6 +28,10 @@ if (!orgtree) process.exit();
 
 await main(orgtree);
 
+const printParseError = (err: ParseError) => {
+  console.log(chalk.red(err.error + EOL + EOL + err.context));
+}
+
 async function main(orgtree: Tree<Person>) {
   let firstCmd = true;
   const rl = readline.createInterface({ input: stdin, output: stdout });
@@ -35,12 +39,8 @@ async function main(orgtree: Tree<Person>) {
 
   if (COMMAND) {
     const cmd = parse(COMMAND);
-    if ((cmd as ParseError).error) {
-      const e = cmd as ParseError;
-      console.log(chalk.red(e.error + EOL + EOL + e.context));
-    } else {
-      await commander.exec(cmd as Command, true);
-    }
+    if (isError(cmd)) printParseError(cmd);
+    else await commander.exec(cmd, true);
   } else {
     while (true) {
       const prompt = firstCmd ? `Lurking ${nfmt(orgtree.size())} people${EOL}> ` : `${EOL}> `;
@@ -52,12 +52,8 @@ async function main(orgtree: Tree<Person>) {
       const cmdstr = await rl.question(prompt);
       const cmd = parse(cmdstr);
 
-      if ((cmd as ParseError).error) {
-        const e = cmd as ParseError;
-        console.log(chalk.red(e.error + EOL + EOL + e.context));
-      } else {
-        await commander.exec(cmd as Command);
-      }
+      if (isError(cmd)) printParseError(cmd);
+      else await commander.exec(cmd);
     }
   }
 

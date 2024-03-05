@@ -67,6 +67,10 @@ export function shouldExport(cmd: Command): cmd is ExportCommand {
   return cmd.exports;
 }
 
+export function isError(cmd: Command | ParseError): cmd is ParseError {
+  return !!(cmd as ParseError).error;
+}
+
 export function parse(str: string): Command | ParseError {
   const tokens = str.split(' ');
   if (!tokens.length) {
