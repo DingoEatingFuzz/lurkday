@@ -61,6 +61,20 @@ export default class Commander {
     // Handle all other cases
     let selection: Node<Person>[];
 
+    if (cmd.fn === TreeFunctions.find) {
+      console.log(prettyPrintPerson(node) + EOL);
+      console.log("Strong Enough Identifiers:");
+      console.log("Use one of these in place of {name} in commands to probably guarantee an exact match." + EOL);
+      console.log(chalk.yellow(`  l/${node.data.name}::${node.data.location}/`));
+      console.log(chalk.yellow(`  t/${node.data.name}::${node.data.title}/`));
+
+      if (shouldExport(cmd)) {
+        console.log(chalk.red('Cannot export the results of the find command'));
+      }
+
+      return;
+    }
+
     if (cmd.fn === TreeFunctions.directs) {
       selection = node.children;
     } else if (cmd.fn === TreeFunctions.chain) {

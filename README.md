@@ -101,6 +101,7 @@ $ lurkday file.xslx
 Jane Doe Sr. Support Engineer Australia
 
 Strong Enough Identifiers:
+Use one of these in place of {name} in commands to probably guarantee an exact match.
 
   l/Jane Doe::Australia/
   t/Jane Doe::Sr. Support Engineer/
