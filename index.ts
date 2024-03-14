@@ -25,14 +25,14 @@ const FILE = args.positionals[0];
 const COMMAND = args.values['c'];
 const FORMAT = args.values['format'] as keyof typeof Filetype;
 
+const printParseError = (err: ParseError) => {
+  console.log(chalk.red(err.error + EOL + EOL + err.context));
+}
+
 let orgtree = reader(FILE, !NO_CACHE);
 if (!orgtree) process.exit();
 
 await main(orgtree);
-
-const printParseError = (err: ParseError) => {
-  console.log(chalk.red(err.error + EOL + EOL + err.context));
-}
 
 async function main(orgtree: Tree<Person>) {
   let firstCmd = true;
